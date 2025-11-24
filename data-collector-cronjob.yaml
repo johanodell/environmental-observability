@@ -1,0 +1,70 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: data-collector-secrets
+  namespace: grafana
+type: Opaque
+stringData:
+  TIBBER_TOKEN: "<YOUR_TIBBER_API_TOKEN>"
+  ELECTRICITYMAPS_TOKEN: "<YOUR_ELECTRICITYMAPS_API_TOKEN>"
+  INFLUXDB_TOKEN: "<YOUR_INFLUXDB_TOKEN>"
+  # Adax API credentials - get these from Adax WiFi app:
+  # Account Tab -> Remote user client API -> Add credential
+  ADAX_CLIENT_ID: "<YOUR_ADAX_CLIENT_ID>"
+  ADAX_CLIENT_SECRET: "<YOUR_ADAX_CLIENT_SECRET>"
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: energy-data-collector
+  namespace: grafana
+  labels:
+    app: energy-data-collector
+spec:
+  # Run every 15 minutes to capture hourly price changes
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: energy-data-collector
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: collector
+              image: python:3.11-slim
+              command:
+                - python
+                - /scripts/collect-data.py
+              env:
+                - name: INFLUXDB_URL
+                  value: "http://influxdb:8086"
+                - name: INFLUXDB_ORG
+                  value: "kepler"
+                - name: INFLUXDB_BUCKET
+                  value: "energy-data"
+                - name: ELECTRICITYMAPS_ZONE
+                  value: "SE-SE3"
+              envFrom:
+                - secretRef:
+                    name: data-collector-secrets
+              volumeMounts:
+                - name: scripts
+                  mountPath: /scripts
+              resources:
+                requests:
+                  memory: "64Mi"
+                  cpu: "50m"
+                limits:
+                  memory: "128Mi"
+                  cpu: "100m"
+          volumes:
+            - name: scripts
+              configMap:
+                name: data-collector-script
+                defaultMode: 0755

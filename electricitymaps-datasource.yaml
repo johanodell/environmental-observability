@@ -1,0 +1,29 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: electricitymaps-datasource
+  namespace: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "kepler"
+  plugins:
+    - name: yesoreyeram-infinity-datasource
+      version: 3.6.0
+  datasource:
+    name: ElectricityMaps
+    type: yesoreyeram-infinity-datasource
+    access: proxy
+    isDefault: false
+    jsonData:
+      global_queries: []
+      auth_method: "apiKey"
+      apiKeyType: "header"
+      apiKeyKey: "auth-token"
+      allowedHosts:
+        - "https://api.electricitymaps.com"
+    secureJsonData:
+      # Replace with your Electricity Maps API key from:
+      # https://www.electricitymaps.com/free-tier-api
+      apiKeyValue: "<YOUR_ELECTRICITYMAP_API_TOKEN>"

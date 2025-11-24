@@ -1,0 +1,28 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: bmc-datasource
+  namespace: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "kepler"
+  plugins:
+    - name: yesoreyeram-infinity-datasource
+      version: 3.6.0
+  datasource:
+    name: BMC-Redfish
+    type: yesoreyeram-infinity-datasource
+    access: proxy
+    isDefault: false
+    jsonData:
+      global_queries: []
+      auth_method: "basicAuth"
+      tlsSkipVerify: true
+      allowedHosts:
+        - "https://<YOUR_BMC_IP_ADDRESS>"
+    secureJsonData:
+      basicAuthPassword: "<YOUR_BMC_PASSWORD>"
+    basicAuth: true
+    basicAuthUser: "<YOUR_BMC_USERNAME>"

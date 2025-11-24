@@ -1,0 +1,425 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-collector-script
+  namespace: grafana
+data:
+  collect-data.py: |
+    #!/usr/bin/env python3
+    """
+    Data collector script for fetching Tibber electricity prices,
+    ElectricityMaps carbon intensity data, and Adax room temperatures,
+    storing them in InfluxDB.
+    """
+    import os
+    import json
+    import urllib.request
+    import urllib.error
+    import urllib.parse
+    import ssl
+    from datetime import datetime, timezone
+
+    # Configuration from environment
+    INFLUXDB_URL = os.environ.get('INFLUXDB_URL', 'http://influxdb:8086')
+    INFLUXDB_TOKEN = os.environ.get('INFLUXDB_TOKEN', '')
+    INFLUXDB_ORG = os.environ.get('INFLUXDB_ORG', 'kepler')
+    INFLUXDB_BUCKET = os.environ.get('INFLUXDB_BUCKET', 'energy-data')
+
+    TIBBER_TOKEN = os.environ.get('TIBBER_TOKEN', '')
+    TIBBER_URL = 'https://api.tibber.com/v1-beta/gql'
+
+    ELECTRICITYMAPS_TOKEN = os.environ.get('ELECTRICITYMAPS_TOKEN', '')
+    ELECTRICITYMAPS_CARBON_URL = 'https://api.electricitymaps.com/v3/carbon-intensity/latest'
+    ELECTRICITYMAPS_POWER_URL = 'https://api.electricitymaps.com/v3/power-breakdown/latest'
+    ELECTRICITYMAPS_ZONE = os.environ.get('ELECTRICITYMAPS_ZONE', 'SE-SE3')
+
+    # Adax API configuration
+    ADAX_CLIENT_ID = os.environ.get('ADAX_CLIENT_ID', '')
+    ADAX_CLIENT_SECRET = os.environ.get('ADAX_CLIENT_SECRET', '')
+    ADAX_API_URL = 'https://api-1.adax.no/client-api'
+
+    # SSL context that skips verification for internal services
+    ssl_context = ssl.create_default_context()
+    ssl_context.check_hostname = False
+    ssl_context.verify_mode = ssl.CERT_NONE
+
+    def fetch_tibber_data():
+        """Fetch current and historical price data from Tibber GraphQL API."""
+        query = '''
+        {
+          viewer {
+            homes {
+              meteringPointData {
+                priceAreaCode
+                gridAreaCode
+              }
+              currentSubscription {
+                priceInfo {
+                  current {
+                    total
+                    energy
+                    tax
+                    startsAt
+                    currency
+                    level
+                  }
+                  today {
+                    total
+                    energy
+                    tax
+                    startsAt
+                    currency
+                    level
+                  }
+                  tomorrow {
+                    total
+                    energy
+                    tax
+                    startsAt
+                    currency
+                    level
+                  }
+                }
+              }
+            }
+          }
+        }
+        '''
+
+        headers = {
+            'Authorization': f'Bearer {TIBBER_TOKEN}',
+            'Content-Type': 'application/json'
+        }
+
+        data = json.dumps({'query': query}).encode('utf-8')
+        req = urllib.request.Request(TIBBER_URL, data=data, headers=headers)
+
+        try:
+            with urllib.request.urlopen(req, context=ssl_context, timeout=30) as response:
+                result = json.loads(response.read().decode('utf-8'))
+                return result.get('data', {})
+        except urllib.error.URLError as e:
+            print(f"Error fetching Tibber data: {e}")
+            return None
+
+    def get_electricitymaps_zone(price_area_code):
+        """Convert Tibber price area code to ElectricityMaps zone format.
+
+        Tibber returns: SE1, SE2, SE3, SE4 (Sweden), NO1-NO5 (Norway), etc.
+        ElectricityMaps expects: SE-SE1, SE-SE2, SE-SE3, SE-SE4, NO-NO1, etc.
+        """
+        if not price_area_code:
+            return ELECTRICITYMAPS_ZONE  # Fall back to default
+
+        # Map country prefix based on price area code pattern
+        if price_area_code.startswith('SE'):
+            return f"SE-{price_area_code}"
+        elif price_area_code.startswith('NO'):
+            return f"NO-{price_area_code}"
+        elif price_area_code.startswith('DK'):
+            return f"DK-{price_area_code}"
+        elif price_area_code.startswith('FI'):
+            return "FI"  # Finland has a single zone
+        else:
+            return ELECTRICITYMAPS_ZONE  # Fall back to default
+
+    def fetch_electricitymaps_data(zone=None):
+        """Fetch carbon intensity and power breakdown data from ElectricityMaps API."""
+        em_zone = zone or ELECTRICITYMAPS_ZONE
+
+        headers = {
+            'auth-token': ELECTRICITYMAPS_TOKEN
+        }
+
+        result = {'zone': em_zone}
+
+        # Fetch carbon intensity
+        carbon_url = f"{ELECTRICITYMAPS_CARBON_URL}?zone={em_zone}"
+        req = urllib.request.Request(carbon_url, headers=headers)
+        try:
+            with urllib.request.urlopen(req, context=ssl_context, timeout=30) as response:
+                carbon_data = json.loads(response.read().decode('utf-8'))
+                result['carbonIntensity'] = carbon_data.get('carbonIntensity', 0)
+        except urllib.error.URLError as e:
+            print(f"Error fetching carbon intensity for zone {em_zone}: {e}")
+            result['carbonIntensity'] = 0
+
+        # Fetch power breakdown (includes renewable/fossil percentages)
+        power_url = f"{ELECTRICITYMAPS_POWER_URL}?zone={em_zone}"
+        req = urllib.request.Request(power_url, headers=headers)
+        try:
+            with urllib.request.urlopen(req, context=ssl_context, timeout=30) as response:
+                power_data = json.loads(response.read().decode('utf-8'))
+                result['renewablePercentage'] = power_data.get('renewablePercentage', 0)
+                result['fossilFreePercentage'] = power_data.get('fossilFreePercentage', 0)
+                # Calculate fossil fuel percentage (100 - fossilFree)
+                result['fossilFuelPercentage'] = 100 - power_data.get('fossilFreePercentage', 100)
+        except urllib.error.URLError as e:
+            print(f"Error fetching power breakdown for zone {em_zone}: {e}")
+            result['renewablePercentage'] = 0
+            result['fossilFreePercentage'] = 0
+            result['fossilFuelPercentage'] = 0
+
+        return result if result.get('carbonIntensity') else None
+
+    def fetch_adax_token():
+        """Authenticate with Adax API and get access token."""
+        if not ADAX_CLIENT_ID or not ADAX_CLIENT_SECRET:
+            print("Adax credentials not configured, skipping...")
+            return None
+
+        token_url = f"{ADAX_API_URL}/auth/token"
+
+        # OAuth2 password grant - Adax uses client_id as username
+        auth_data = urllib.parse.urlencode({
+            'grant_type': 'password',
+            'username': ADAX_CLIENT_ID,
+            'password': ADAX_CLIENT_SECRET
+        }).encode('utf-8')
+
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        req = urllib.request.Request(token_url, data=auth_data, headers=headers)
+
+        try:
+            with urllib.request.urlopen(req, context=ssl_context, timeout=30) as response:
+                token_data = json.loads(response.read().decode('utf-8'))
+                return token_data.get('access_token')
+        except urllib.error.URLError as e:
+            print(f"Error authenticating with Adax: {e}")
+            return None
+
+    def fetch_adax_data(access_token):
+        """Fetch room data from Adax API including temperatures."""
+        if not access_token:
+            return None
+
+        content_url = f"{ADAX_API_URL}/rest/v1/content/?withEnergy=1"
+        headers = {
+            'Authorization': f'Bearer {access_token}'
+        }
+
+        req = urllib.request.Request(content_url, headers=headers)
+
+        try:
+            with urllib.request.urlopen(req, context=ssl_context, timeout=30) as response:
+                return json.loads(response.read().decode('utf-8'))
+        except urllib.error.URLError as e:
+            print(f"Error fetching Adax data: {e}")
+            return None
+
+    def process_adax_data(adax_data):
+        """Process Adax room data and convert to InfluxDB line protocol.
+
+        Only processes the garage room for temperature monitoring.
+        """
+        if not adax_data:
+            return []
+
+        lines = []
+        timestamp = datetime.now(timezone.utc)
+        ts_unix = int(timestamp.timestamp())
+
+        rooms = adax_data.get('rooms', [])
+        homes = {h['id']: h.get('name', f'home_{h["id"]}') for h in adax_data.get('homes', [])}
+
+        for room in rooms:
+            room_name = room.get('name', 'unknown').lower()
+
+            # Only process the garage room
+            if room_name != 'garage':
+                continue
+
+            room_id = room.get('id', 0)
+            room_name_tag = room_name.replace(' ', '_').replace(',', '')
+            home_id = room.get('homeId', 0)
+            home_name = homes.get(home_id, 'unknown').replace(' ', '_').replace(',', '')
+
+            # Temperature is in hundredths of degrees Celsius
+            temperature_raw = room.get('temperature')
+            target_temp_raw = room.get('targetTemperature')
+            heating_enabled = room.get('heatingEnabled', False)
+
+            # Convert from hundredths to actual temperature
+            temperature = temperature_raw / 100.0 if temperature_raw else None
+            target_temp = target_temp_raw / 100.0 if target_temp_raw else None
+
+            if temperature is not None:
+                # Escape special characters in tag values
+                lines.append(
+                    f'adax_temperature,room={room_name_tag},room_id={room_id},home={home_name} '
+                    f'temperature={temperature},target_temperature={target_temp or 0},'
+                    f'heating_enabled={1 if heating_enabled else 0} {ts_unix}'
+                )
+                print(f"  Room '{room_name_tag}': {temperature}°C (target: {target_temp}°C)")
+
+        return lines
+
+    def write_to_influxdb(line_protocol_data):
+        """Write data to InfluxDB using line protocol."""
+        url = f"{INFLUXDB_URL}/api/v2/write?org={INFLUXDB_ORG}&bucket={INFLUXDB_BUCKET}&precision=s"
+        headers = {
+            'Authorization': f'Token {INFLUXDB_TOKEN}',
+            'Content-Type': 'text/plain'
+        }
+
+        data = line_protocol_data.encode('utf-8')
+        req = urllib.request.Request(url, data=data, headers=headers, method='POST')
+
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                print(f"Data written to InfluxDB: {response.status}")
+                return True
+        except urllib.error.URLError as e:
+            print(f"Error writing to InfluxDB: {e}")
+            return False
+
+    def process_tibber_data(tibber_data):
+        """Process Tibber data and convert to InfluxDB line protocol.
+
+        Returns a tuple: (lines, price_area_code) where price_area_code is from
+        the first home's meteringPointData for use with ElectricityMaps.
+        """
+        if not tibber_data:
+            return [], None
+
+        lines = []
+        price_area_code = None
+        homes = tibber_data.get('viewer', {}).get('homes', [])
+
+        for home_idx, home in enumerate(homes):
+            # Extract price area code from metering point data
+            metering_data = home.get('meteringPointData', {})
+            home_price_area = metering_data.get('priceAreaCode', '')
+            grid_area = metering_data.get('gridAreaCode', '')
+
+            # Use the first home's price area for ElectricityMaps
+            if home_idx == 0 and home_price_area:
+                price_area_code = home_price_area
+                print(f"Detected price area: {price_area_code} (grid: {grid_area})")
+
+            # Convert to ElectricityMaps zone format for tagging
+            em_zone = get_electricitymaps_zone(home_price_area) if home_price_area else ELECTRICITYMAPS_ZONE
+
+            subscription = home.get('currentSubscription', {})
+            price_info = subscription.get('priceInfo', {})
+
+            # Current price
+            current = price_info.get('current', {})
+            if current:
+                timestamp = datetime.fromisoformat(current['startsAt'].replace('Z', '+00:00'))
+                ts_unix = int(timestamp.timestamp())
+                lines.append(
+                    f'electricity_price,home={home_idx},zone={em_zone},price_area={home_price_area},type=current '
+                    f'total={current.get("total", 0)},energy={current.get("energy", 0)},'
+                    f'tax={current.get("tax", 0)},level="{current.get("level", "NORMAL")}" {ts_unix}'
+                )
+
+            # Today's hourly prices
+            today_prices = price_info.get('today', [])
+            for price in today_prices:
+                timestamp = datetime.fromisoformat(price['startsAt'].replace('Z', '+00:00'))
+                ts_unix = int(timestamp.timestamp())
+                lines.append(
+                    f'electricity_price,home={home_idx},zone={em_zone},price_area={home_price_area},type=hourly '
+                    f'total={price.get("total", 0)},energy={price.get("energy", 0)},'
+                    f'tax={price.get("tax", 0)},level="{price.get("level", "NORMAL")}" {ts_unix}'
+                )
+
+            # Tomorrow's hourly prices (if available)
+            tomorrow_prices = price_info.get('tomorrow', [])
+            for price in tomorrow_prices:
+                timestamp = datetime.fromisoformat(price['startsAt'].replace('Z', '+00:00'))
+                ts_unix = int(timestamp.timestamp())
+                lines.append(
+                    f'electricity_price,home={home_idx},zone={em_zone},price_area={home_price_area},type=hourly '
+                    f'total={price.get("total", 0)},energy={price.get("energy", 0)},'
+                    f'tax={price.get("tax", 0)},level="{price.get("level", "NORMAL")}" {ts_unix}'
+                )
+
+        return lines, price_area_code
+
+    def process_electricitymaps_data(em_data):
+        """Process ElectricityMaps data and convert to InfluxDB line protocol."""
+        if not em_data:
+            return []
+
+        lines = []
+        timestamp = datetime.now(timezone.utc)
+        ts_unix = int(timestamp.timestamp())
+
+        # Use the zone from the fetched data (dynamically determined)
+        zone = em_data.get('zone', ELECTRICITYMAPS_ZONE)
+        carbon_intensity = em_data.get('carbonIntensity', 0)
+        fossil_fuel_pct = em_data.get('fossilFuelPercentage', 0)
+        fossil_free_pct = em_data.get('fossilFreePercentage', 0)
+        renewable_pct = em_data.get('renewablePercentage', 0)
+
+        lines.append(
+            f'carbon_intensity,zone={zone} '
+            f'value={carbon_intensity},fossil_fuel_pct={fossil_fuel_pct},'
+            f'fossil_free_pct={fossil_free_pct},renewable_pct={renewable_pct} {ts_unix}'
+        )
+
+        return lines
+
+    def main():
+        print(f"Starting data collection at {datetime.now(timezone.utc).isoformat()}")
+
+        all_lines = []
+        price_area_code = None
+
+        # Fetch and process Tibber data (also extracts price area for ElectricityMaps)
+        print("Fetching Tibber data...")
+        tibber_data = fetch_tibber_data()
+        if tibber_data:
+            tibber_lines, price_area_code = process_tibber_data(tibber_data)
+            all_lines.extend(tibber_lines)
+            print(f"Processed {len(tibber_lines)} Tibber data points")
+        else:
+            print("No Tibber data received")
+
+        # Determine ElectricityMaps zone from Tibber price area (dynamic mapping)
+        em_zone = get_electricitymaps_zone(price_area_code) if price_area_code else ELECTRICITYMAPS_ZONE
+        print(f"Using ElectricityMaps zone: {em_zone} (from price area: {price_area_code or 'default'})")
+
+        # Fetch and process ElectricityMaps data using the dynamically determined zone
+        print("Fetching ElectricityMaps data...")
+        em_data = fetch_electricitymaps_data(zone=em_zone)
+        if em_data:
+            em_lines = process_electricitymaps_data(em_data)
+            all_lines.extend(em_lines)
+            print(f"Processed {len(em_lines)} ElectricityMaps data points")
+        else:
+            print("No ElectricityMaps data received")
+
+        # Fetch and process Adax temperature data
+        print("Fetching Adax temperature data...")
+        adax_token = fetch_adax_token()
+        if adax_token:
+            adax_data = fetch_adax_data(adax_token)
+            if adax_data:
+                adax_lines = process_adax_data(adax_data)
+                all_lines.extend(adax_lines)
+                print(f"Processed {len(adax_lines)} Adax temperature data points")
+            else:
+                print("No Adax data received")
+        else:
+            print("Adax not configured or authentication failed")
+
+        # Write all data to InfluxDB
+        if all_lines:
+            line_protocol = '\n'.join(all_lines)
+            print(f"Writing {len(all_lines)} data points to InfluxDB...")
+            if write_to_influxdb(line_protocol):
+                print("Data collection completed successfully")
+            else:
+                print("Failed to write data to InfluxDB")
+        else:
+            print("No data to write")
+
+    if __name__ == '__main__':
+        main()

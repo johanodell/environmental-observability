@@ -1,0 +1,1611 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: dynamic-energy-dashboard
+  namespace: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "kepler"
+  json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+          "id": 100,
+          "panels": [],
+          "title": "Live Data Overview",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "orange", "value": 2},
+                  {"color": "red", "value": 3}
+                ]
+              },
+              "unit": "currencySEK"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 1},
+          "id": 1,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"electricity_price\")\n  |> filter(fn: (r) => r.type == \"current\")\n  |> filter(fn: (r) => r._field == \"total\")\n  |> last()",
+              "refId": "A"
+            }
+          ],
+          "title": "Current Electricity Price",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 50},
+                  {"color": "orange", "value": 100},
+                  {"color": "red", "value": 200}
+                ]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 1},
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"value\")\n  |> last()",
+              "refId": "A"
+            }
+          ],
+          "title": "Current Carbon Intensity (gCO2eq/kWh)",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "orange", "value": 30},
+                  {"color": "yellow", "value": 50},
+                  {"color": "green", "value": 70}
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 12, "y": 1},
+          "id": 3,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"renewable_pct\")\n  |> last()",
+              "refId": "A"
+            }
+          ],
+          "title": "Renewable Energy %",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 20},
+                  {"color": "orange", "value": 40},
+                  {"color": "red", "value": 60}
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+          "id": 4,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"fossil_fuel_pct\")\n  |> last()",
+              "refId": "A"
+            }
+          ],
+          "title": "Fossil Fuel %",
+          "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+          "id": 110,
+          "panels": [],
+          "title": "Top Consumers Overview",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Top 5 namespaces by energy consumption with estimated cost and CO2 emissions",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "custom": {
+                "align": "auto",
+                "cellOptions": {"type": "auto"},
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {"id": "byName", "options": "Namespace"},
+                "properties": [{"id": "custom.width", "value": 200}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Power (W)"},
+                "properties": [
+                  {"id": "unit", "value": "watt"},
+                  {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}},
+                  {"id": "color", "value": {"mode": "continuous-BlYlRd"}}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Energy (kWh)"},
+                "properties": [
+                  {"id": "unit", "value": "kwatth"},
+                  {"id": "decimals", "value": 3}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Cost (SEK)"},
+                "properties": [
+                  {"id": "unit", "value": "currencySEK"},
+                  {"id": "decimals", "value": 2},
+                  {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}},
+                  {"id": "color", "value": {"mode": "continuous-BlYlRd"}}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "CO2 (g)"},
+                "properties": [
+                  {"id": "unit", "value": "massg"},
+                  {"id": "decimals", "value": 1},
+                  {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}},
+                  {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+                ]
+              }
+            ]
+          },
+          "gridPos": {"h": 10, "w": 12, "x": 0, "y": 6},
+          "id": 19,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": true},
+            "showHeader": true,
+            "sortBy": [{"desc": true, "displayName": "Power (W)"}]
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "topk(5, sum(irate(kepler_pod_cpu_joules_total[5m])) by (pod_namespace))",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Power"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "topk(5, sum(increase(kepler_pod_cpu_joules_total[1h])) by (pod_namespace) / 3600000)",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Energy"
+            }
+          ],
+          "title": "Top 5 Namespace Consumers",
+          "transformations": [
+            {"id": "seriesToColumns", "options": {"byField": "pod_namespace"}},
+            {"id": "organize", "options": {
+              "excludeByName": {"Time": true, "Time 1": true, "Time 2": true},
+              "indexByName": {},
+              "renameByName": {"Value #Power": "Power (W)", "Value #Energy": "Energy (kWh)", "pod_namespace": "Namespace"}
+            }},
+            {"id": "calculateField", "options": {
+              "alias": "Cost (SEK)",
+              "binary": {"left": "Energy (kWh)", "operator": "*", "right": "$electricity_price"},
+              "mode": "binary"
+            }},
+            {"id": "calculateField", "options": {
+              "alias": "CO2 (g)",
+              "binary": {"left": "Energy (kWh)", "operator": "*", "right": "$carbon_intensity"},
+              "mode": "binary"
+            }}
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Top 5 namespaces by carbon emissions",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false}
+              },
+              "mappings": [],
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 10, "w": 6, "x": 12, "y": 6},
+          "id": 20,
+          "options": {
+            "displayLabels": ["name", "percent"],
+            "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "values": ["value"]},
+            "pieType": "donut",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "topk(5, sum(increase(kepler_pod_cpu_joules_total[1h])) by (pod_namespace) / 3600000) * $carbon_intensity",
+              "legendFormat": "{{pod_namespace}}",
+              "refId": "A"
+            }
+          ],
+          "title": "CO2 Emissions by Namespace (Top 5)",
+          "type": "piechart"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Top 5 namespaces by energy cost",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false}
+              },
+              "mappings": [],
+              "unit": "currencySEK"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 10, "w": 6, "x": 18, "y": 6},
+          "id": 21,
+          "options": {
+            "displayLabels": ["name", "percent"],
+            "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "values": ["value"]},
+            "pieType": "donut",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "topk(5, sum(increase(kepler_pod_cpu_joules_total[1h])) by (pod_namespace) / 3600000) * $electricity_price",
+              "legendFormat": "{{pod_namespace}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Energy Cost by Namespace (Top 5)",
+          "type": "piechart"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 16},
+          "id": 111,
+          "panels": [],
+          "title": "Namespace Details: $namespace",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Detailed power consumption by pod in the selected namespace(s)",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "custom": {
+                "align": "auto",
+                "cellOptions": {"type": "auto"},
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {"id": "byName", "options": "Pod"},
+                "properties": [{"id": "custom.width", "value": 300}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Namespace"},
+                "properties": [{"id": "custom.width", "value": 150}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Power (W)"},
+                "properties": [
+                  {"id": "unit", "value": "watt"},
+                  {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}},
+                  {"id": "color", "value": {"mode": "continuous-BlYlRd"}}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Energy (kWh)"},
+                "properties": [
+                  {"id": "unit", "value": "kwatth"},
+                  {"id": "decimals", "value": 4}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Cost (SEK)"},
+                "properties": [
+                  {"id": "unit", "value": "currencySEK"},
+                  {"id": "decimals", "value": 4}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "CO2 (g)"},
+                "properties": [
+                  {"id": "unit", "value": "massg"},
+                  {"id": "decimals", "value": 2}
+                ]
+              }
+            ]
+          },
+          "gridPos": {"h": 12, "w": 24, "x": 0, "y": 17},
+          "id": 22,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": true},
+            "showHeader": true,
+            "sortBy": [{"desc": true, "displayName": "Power (W)"}]
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "sum(irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[5m])) by (pod_name, pod_namespace)",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Power"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "sum(increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[1h])) by (pod_name, pod_namespace) / 3600000",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Energy"
+            }
+          ],
+          "title": "Pod Energy Consumption Details",
+          "transformations": [
+            {"id": "seriesToColumns", "options": {"byField": "pod_name"}},
+            {"id": "organize", "options": {
+              "excludeByName": {"Time": true, "Time 1": true, "Time 2": true, "pod_namespace 2": true},
+              "indexByName": {},
+              "renameByName": {"Value #Power": "Power (W)", "Value #Energy": "Energy (kWh)", "pod_name": "Pod", "pod_namespace 1": "Namespace"}
+            }},
+            {"id": "calculateField", "options": {
+              "alias": "Cost (SEK)",
+              "binary": {"left": "Energy (kWh)", "operator": "*", "right": "$electricity_price"},
+              "mode": "binary"
+            }},
+            {"id": "calculateField", "options": {
+              "alias": "CO2 (g)",
+              "binary": {"left": "Energy (kWh)", "operator": "*", "right": "$carbon_intensity"},
+              "mode": "binary"
+            }}
+          ],
+          "type": "table"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 29},
+          "id": 112,
+          "panels": [],
+          "title": "Virtual Machine Consumers (OpenShift Virtualization)",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Top 5 Virtual Machines by energy consumption. VMs run as virt-launcher pods in OpenShift Virtualization.",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "custom": {
+                "align": "auto",
+                "cellOptions": {"type": "auto"},
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              }
+            },
+            "overrides": [
+              {
+                "matcher": {"id": "byName", "options": "VM Name"},
+                "properties": [{"id": "custom.width", "value": 250}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Namespace"},
+                "properties": [{"id": "custom.width", "value": 150}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Power (W)"},
+                "properties": [
+                  {"id": "unit", "value": "watt"},
+                  {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}},
+                  {"id": "color", "value": {"mode": "continuous-BlYlRd"}}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Energy (kWh)"},
+                "properties": [
+                  {"id": "unit", "value": "kwatth"},
+                  {"id": "decimals", "value": 3}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Cost (SEK)"},
+                "properties": [
+                  {"id": "unit", "value": "currencySEK"},
+                  {"id": "decimals", "value": 2},
+                  {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}},
+                  {"id": "color", "value": {"mode": "continuous-BlYlRd"}}
+                ]
+              },
+              {
+                "matcher": {"id": "byName", "options": "CO2 (g)"},
+                "properties": [
+                  {"id": "unit", "value": "massg"},
+                  {"id": "decimals", "value": 1},
+                  {"id": "custom.cellOptions", "value": {"mode": "gradient", "type": "gauge"}},
+                  {"id": "color", "value": {"mode": "continuous-GrYlRd"}}
+                ]
+              }
+            ]
+          },
+          "gridPos": {"h": 10, "w": 12, "x": 0, "y": 30},
+          "id": 23,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {"countRows": false, "fields": "", "reducer": ["sum"], "show": true},
+            "showHeader": true,
+            "sortBy": [{"desc": true, "displayName": "Power (W)"}]
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "topk(5, sum(irate(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher-.*\"}[5m])) by (pod_name, pod_namespace))",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Power"
+            },
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "topk(5, sum(increase(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher-.*\"}[1h])) by (pod_name, pod_namespace) / 3600000)",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Energy"
+            }
+          ],
+          "title": "Top 5 VM Consumers",
+          "transformations": [
+            {"id": "seriesToColumns", "options": {"byField": "pod_name"}},
+            {"id": "organize", "options": {
+              "excludeByName": {"Time": true, "Time 1": true, "Time 2": true, "pod_namespace 2": true},
+              "indexByName": {},
+              "renameByName": {"Value #Power": "Power (W)", "Value #Energy": "Energy (kWh)", "pod_name": "VM Name", "pod_namespace 1": "Namespace"}
+            }},
+            {"id": "calculateField", "options": {
+              "alias": "Cost (SEK)",
+              "binary": {"left": "Energy (kWh)", "operator": "*", "right": "$electricity_price"},
+              "mode": "binary"
+            }},
+            {"id": "calculateField", "options": {
+              "alias": "CO2 (g)",
+              "binary": {"left": "Energy (kWh)", "operator": "*", "right": "$carbon_intensity"},
+              "mode": "binary"
+            }}
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Top 5 VMs by carbon emissions",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false}
+              },
+              "mappings": [],
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 10, "w": 6, "x": 12, "y": 30},
+          "id": 24,
+          "options": {
+            "displayLabels": ["name", "percent"],
+            "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "values": ["value"]},
+            "pieType": "donut",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "topk(5, sum(increase(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher-.*\"}[1h])) by (pod_name) / 3600000) * $carbon_intensity",
+              "legendFormat": "{{pod_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "VM CO2 Emissions (Top 5)",
+          "type": "piechart"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Top 5 VMs by energy cost",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false}
+              },
+              "mappings": [],
+              "unit": "currencySEK"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 10, "w": 6, "x": 18, "y": 30},
+          "id": 25,
+          "options": {
+            "displayLabels": ["name", "percent"],
+            "legend": {"displayMode": "table", "placement": "right", "showLegend": true, "values": ["value"]},
+            "pieType": "donut",
+            "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "topk(5, sum(increase(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher-.*\"}[1h])) by (pod_name) / 3600000) * $electricity_price",
+              "legendFormat": "{{pod_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "VM Energy Cost (Top 5)",
+          "type": "piechart"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Real-time power consumption of all VMs over time",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "normal"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 40},
+          "id": 26,
+          "options": {
+            "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "desc"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "sum(irate(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher-.*\"}[5m])) by (pod_name)",
+              "legendFormat": "{{pod_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "VM Power Consumption Over Time (W)",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 48},
+          "id": 101,
+          "panels": [],
+          "title": "Real-Time Power & Calculated Costs",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "none"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+          "id": 5,
+          "options": {
+            "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "desc"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "sum(irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[5m])) by (pod_namespace)",
+              "legendFormat": "{{pod_namespace}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Real-Time Power by Namespace (W)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "none"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+          "id": 6,
+          "options": {
+            "legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "desc"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "sum(irate(kepler_pod_cpu_joules_total[5m])) by (node_name)",
+              "legendFormat": "{{node_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Real-Time Power by Node (W)",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 14},
+          "id": 102,
+          "panels": [],
+          "title": "Dynamic Cost & CO2 Calculations (Using Live Data)",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "Energy cost calculated by multiplying power consumption (from Kepler) by current electricity price (from InfluxDB/Tibber)",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 5}
+                ]
+              },
+              "unit": "currencySEK"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 6, "w": 8, "x": 0, "y": 15},
+          "id": 7,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "sum(increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[1h])) / 3600000",
+              "refId": "A"
+            }
+          ],
+          "title": "Energy Consumed Last Hour (kWh)",
+          "transformations": [
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "Cost (SEK)",
+                "binary": {
+                  "left": "Value",
+                  "operator": "*",
+                  "reducer": "sum",
+                  "right": "$electricity_price"
+                },
+                "mode": "binary",
+                "reduce": {"reducer": "sum"}
+              }
+            }
+          ],
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "description": "CO2 emissions calculated by multiplying power consumption by current carbon intensity from ElectricityMaps",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 100},
+                  {"color": "red", "value": 500}
+                ]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 6, "w": 8, "x": 8, "y": 15},
+          "id": 8,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "sum(increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[1h])) / 3600000",
+              "refId": "A"
+            }
+          ],
+          "title": "CO2 Emissions Last Hour (g)",
+          "transformations": [
+            {
+              "id": "calculateField",
+              "options": {
+                "alias": "CO2 (g)",
+                "binary": {
+                  "left": "Value",
+                  "operator": "*",
+                  "reducer": "sum",
+                  "right": "$carbon_intensity"
+                },
+                "mode": "binary",
+                "reduce": {"reducer": "sum"}
+              }
+            }
+          ],
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 10},
+                  {"color": "red", "value": 50}
+                ]
+              },
+              "unit": "kwatth"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 6, "w": 8, "x": 16, "y": 15},
+          "id": 9,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["lastNotNull"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+              "expr": "sum(increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[24h])) / 3600000",
+              "refId": "A"
+            }
+          ],
+          "title": "Energy Consumed Last 24h (kWh)",
+          "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 21},
+          "id": 103,
+          "panels": [],
+          "title": "Historical Electricity Prices (Tibber)",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "SEK/kWh",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "none"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              },
+              "unit": "currencySEK"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 22},
+          "id": 10,
+          "options": {
+            "legend": {"calcs": ["mean", "min", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"electricity_price\")\n  |> filter(fn: (r) => r.type == \"hourly\")\n  |> filter(fn: (r) => r._field == \"total\")\n  |> aggregateWindow(every: 1h, fn: mean, createEmpty: false)",
+              "refId": "A"
+            }
+          ],
+          "title": "Hourly Electricity Prices (SEK/kWh)",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 30},
+          "id": 104,
+          "panels": [],
+          "title": "Historical Carbon Intensity (ElectricityMaps)",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "gCO2eq/kWh",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "none"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 31},
+          "id": 11,
+          "options": {
+            "legend": {"calcs": ["mean", "min", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"value\")\n  |> aggregateWindow(every: 15m, fn: mean, createEmpty: false)",
+              "refId": "A"
+            }
+          ],
+          "title": "Carbon Intensity Over Time (gCO2eq/kWh)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "%",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "none"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              },
+              "unit": "percent"
+            },
+            "overrides": [
+              {
+                "matcher": {"id": "byName", "options": "Renewable %"},
+                "properties": [{"id": "color", "value": {"fixedColor": "green", "mode": "fixed"}}]
+              },
+              {
+                "matcher": {"id": "byName", "options": "Fossil Fuel %"},
+                "properties": [{"id": "color", "value": {"fixedColor": "red", "mode": "fixed"}}]
+              }
+            ]
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 31},
+          "id": 12,
+          "options": {
+            "legend": {"calcs": ["mean"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "multi", "sort": "desc"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"renewable_pct\")\n  |> aggregateWindow(every: 15m, fn: mean, createEmpty: false)",
+              "refId": "A"
+            },
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"fossil_fuel_pct\")\n  |> aggregateWindow(every: 15m, fn: mean, createEmpty: false)",
+              "refId": "B"
+            }
+          ],
+          "title": "Energy Mix Over Time",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 39},
+          "id": 105,
+          "panels": [],
+          "title": "Historical Cost & Emissions Analysis",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "description": "Daily average electricity price over the selected time range",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "SEK/kWh",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 60,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "none"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              },
+              "unit": "currencySEK"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 0, "y": 40},
+          "id": 13,
+          "options": {
+            "legend": {"calcs": ["mean", "sum"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"electricity_price\")\n  |> filter(fn: (r) => r.type == \"hourly\")\n  |> filter(fn: (r) => r._field == \"total\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)",
+              "refId": "A"
+            }
+          ],
+          "title": "Daily Average Electricity Price",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "description": "Daily average carbon intensity over the selected time range",
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "palette-classic"},
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "gCO2eq/kWh",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 60,
+                "gradientMode": "none",
+                "hideFrom": {"legend": false, "tooltip": false, "viz": false},
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {"type": "linear"},
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {"group": "A", "mode": "none"},
+                "thresholdsStyle": {"mode": "off"}
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [{"color": "green", "value": null}]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 8, "w": 12, "x": 12, "y": 40},
+          "id": 14,
+          "options": {
+            "legend": {"calcs": ["mean", "min", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true},
+            "tooltip": {"mode": "single", "sort": "none"}
+          },
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"value\")\n  |> aggregateWindow(every: 1d, fn: mean, createEmpty: false)",
+              "refId": "A"
+            }
+          ],
+          "title": "Daily Average Carbon Intensity",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {"h": 1, "w": 24, "x": 0, "y": 48},
+          "id": 106,
+          "panels": [],
+          "title": "Monthly Summary Statistics",
+          "type": "row"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 1},
+                  {"color": "red", "value": 2}
+                ]
+              },
+              "unit": "currencySEK"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 0, "y": 49},
+          "id": 15,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["mean"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._measurement == \"electricity_price\")\n  |> filter(fn: (r) => r.type == \"hourly\")\n  |> filter(fn: (r) => r._field == \"total\")\n  |> mean()",
+              "refId": "A"
+            }
+          ],
+          "title": "Avg Price (30d)",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 2},
+                  {"color": "red", "value": 4}
+                ]
+              },
+              "unit": "currencySEK"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 6, "y": 49},
+          "id": 16,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["max"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._measurement == \"electricity_price\")\n  |> filter(fn: (r) => r.type == \"hourly\")\n  |> filter(fn: (r) => r._field == \"total\")\n  |> max()",
+              "refId": "A"
+            }
+          ],
+          "title": "Max Price (30d)",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "green", "value": null},
+                  {"color": "yellow", "value": 50},
+                  {"color": "red", "value": 100}
+                ]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 12, "y": 49},
+          "id": 17,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["mean"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"value\")\n  |> mean()",
+              "refId": "A"
+            }
+          ],
+          "title": "Avg Carbon Intensity (30d)",
+          "type": "stat"
+        },
+        {
+          "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+          "fieldConfig": {
+            "defaults": {
+              "color": {"mode": "thresholds"},
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {"color": "red", "value": null},
+                  {"color": "yellow", "value": 50},
+                  {"color": "green", "value": 70}
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": {"h": 4, "w": 6, "x": 18, "y": 49},
+          "id": 18,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": {
+              "calcs": ["mean"],
+              "fields": "",
+              "values": false
+            },
+            "textMode": "auto"
+          },
+          "pluginVersion": "10.0.0",
+          "targets": [
+            {
+              "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -30d)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"renewable_pct\")\n  |> mean()",
+              "refId": "A"
+            }
+          ],
+          "title": "Avg Renewable % (30d)",
+          "type": "stat"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 38,
+      "style": "dark",
+      "tags": ["kepler", "energy", "dynamic", "cost", "co2"],
+      "templating": {
+        "list": [
+          {
+            "current": {
+              "selected": false,
+              "text": "Prometheus",
+              "value": "prometheus"
+            },
+            "hide": 0,
+            "includeAll": false,
+            "label": "Prometheus",
+            "multi": false,
+            "name": "DS_PROMETHEUS",
+            "options": [],
+            "query": "prometheus",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+          {
+            "current": {
+              "selected": false,
+              "text": "InfluxDB",
+              "value": "influxdb"
+            },
+            "hide": 0,
+            "includeAll": false,
+            "label": "InfluxDB",
+            "multi": false,
+            "name": "DS_INFLUXDB",
+            "options": [],
+            "query": "influxdb",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+          {
+            "allValue": ".*",
+            "current": {
+              "selected": true,
+              "text": "All",
+              "value": "$__all"
+            },
+            "datasource": {"type": "prometheus", "uid": "${DS_PROMETHEUS}"},
+            "definition": "label_values(kepler_pod_cpu_joules_total, pod_namespace)",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Namespace",
+            "multi": true,
+            "name": "namespace",
+            "options": [],
+            "query": {
+              "query": "label_values(kepler_pod_cpu_joules_total, pod_namespace)",
+              "refId": "StandardVariableQuery"
+            },
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": false,
+              "text": "1.00",
+              "value": "1.00"
+            },
+            "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+            "definition": "",
+            "description": "Current electricity price from InfluxDB (SEK/kWh)",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Electricity Price (SEK/kWh)",
+            "multi": false,
+            "name": "electricity_price",
+            "options": [],
+            "query": "from(bucket: \"energy-data\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"electricity_price\")\n  |> filter(fn: (r) => r.type == \"current\")\n  |> filter(fn: (r) => r._field == \"total\")\n  |> last()\n  |> keep(columns: [\"_value\"])",
+            "refresh": 2,
+            "regex": "/([0-9.]+)/",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
+          },
+          {
+            "current": {
+              "selected": false,
+              "text": "45",
+              "value": "45"
+            },
+            "datasource": {"type": "influxdb", "uid": "${DS_INFLUXDB}"},
+            "definition": "",
+            "description": "Current carbon intensity from InfluxDB (gCO2eq/kWh)",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Carbon Intensity (gCO2eq/kWh)",
+            "multi": false,
+            "name": "carbon_intensity",
+            "options": [],
+            "query": "from(bucket: \"energy-data\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"carbon_intensity\")\n  |> filter(fn: (r) => r._field == \"value\")\n  |> last()\n  |> keep(columns: [\"_value\"])",
+            "refresh": 2,
+            "regex": "/([0-9.]+)/",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
+          }
+        ]
+      },
+      "time": {
+        "from": "now-24h",
+        "to": "now"
+      },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Dynamic Energy Dashboard",
+      "uid": "dynamic-energy",
+      "version": 1,
+      "weekStart": ""
+    }

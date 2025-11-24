@@ -1,0 +1,28 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: tibber-datasource
+  namespace: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "kepler"
+  plugins:
+    - name: yesoreyeram-infinity-datasource
+      version: 3.6.0
+  datasource:
+    name: Tibber
+    type: yesoreyeram-infinity-datasource
+    access: proxy
+    isDefault: false
+    jsonData:
+      # Tibber GraphQL endpoint
+      global_queries: []
+      auth_method: "bearerToken"
+      allowedHosts:
+        - "https://api.tibber.com"
+    secureJsonData:
+      # Replace with your Tibber Personal Access Token from:
+      # https://developer.tibber.com/settings/access-token
+      bearerToken: "<YOUR BEARER TOKEN"

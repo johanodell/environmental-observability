@@ -1,0 +1,147 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: influxdb-pvc
+  namespace: grafana
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: influxdb-secrets
+  namespace: grafana
+type: Opaque
+stringData:
+  DOCKER_INFLUXDB_INIT_USERNAME: <YOUR USER>
+  DOCKER_INFLUXDB_INIT_PASSWORD: <YOUR PASSWORD>
+  DOCKER_INFLUXDB_INIT_ORG: <YOUR ORG>
+  DOCKER_INFLUXDB_INIT_BUCKET: <YOUR BUCKET>
+  DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: <YOUR ADMIN TOKEN>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: influxdb-init-script
+  namespace: grafana
+data:
+  init-influxdb.sh: |
+    #!/bin/bash
+    set -e
+
+    # Wait for InfluxDB to be ready
+    echo "Waiting for InfluxDB to be ready..."
+    until curl -s http://localhost:8086/health > /dev/null 2>&1; do
+      sleep 2
+    done
+
+    # Check if already setup
+    if curl -s http://localhost:8086/api/v2/setup | grep -q '"allowed":false'; then
+      echo "InfluxDB already initialized"
+      exit 0
+    fi
+
+    echo "Initializing InfluxDB..."
+    curl -s -X POST http://localhost:8086/api/v2/setup \
+      -H "Content-Type: application/json" \
+      -d '{
+        "username": "<YOUR USER>",
+        "password": "<YOUR PASSWORD>",
+        "org": "<YOUR ORG>",
+        "bucket": "<YOUR BUCKET>",
+        "token": "<YOUR ADMIN TOKEN>"
+      }' || true
+
+    echo "InfluxDB initialization complete"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: influxdb
+  namespace: grafana
+  labels:
+    app: influxdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: influxdb
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+        - name: influxdb
+          image: influxdb:2.7
+          args:
+            - influxd
+          ports:
+            - containerPort: 8086
+              name: http
+          env:
+            - name: INFLUXD_HTTP_BIND_ADDRESS
+              value: ":8086"
+          volumeMounts:
+            - name: influxdb-data
+              mountPath: /var/lib/influxdb2
+            - name: influxdb-config
+              mountPath: /etc/influxdb2
+            - name: init-script
+              mountPath: /scripts
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8086
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8086
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/bash
+                  - /scripts/init-influxdb.sh
+      volumes:
+        - name: influxdb-data
+          persistentVolumeClaim:
+            claimName: influxdb-pvc
+        - name: influxdb-config
+          emptyDir: {}
+        - name: init-script
+          configMap:
+            name: influxdb-init-script
+            defaultMode: 0755
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+  namespace: grafana
+  labels:
+    app: influxdb
+spec:
+  selector:
+    app: influxdb
+  ports:
+    - port: 8086
+      targetPort: 8086
+      name: http
+  type: ClusterIP

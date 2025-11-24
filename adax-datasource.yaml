@@ -1,0 +1,24 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: adax-datasource
+  namespace: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "kepler"
+  plugins:
+    - name: yesoreyeram-infinity-datasource
+      version: 3.6.0
+  datasource:
+    name: Adax
+    type: yesoreyeram-infinity-datasource
+    access: proxy
+    isDefault: false
+    jsonData:
+      global_queries: []
+      # Adax API uses OAuth2, but we'll handle auth via the data collector
+      # This datasource is for direct queries if token is manually managed
+      allowedHosts:
+        - "https://api-1.adax.no"

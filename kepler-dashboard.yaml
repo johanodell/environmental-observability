@@ -1,0 +1,1491 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: kepler-power-monitoring
+  namespace: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "kepler"
+  json: |
+    {
+      "annotations": {
+        "list": []
+      },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "panels": [],
+          "title": "Overview - Real-time Power Consumption",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 500 },
+                  { "color": "red", "value": 1000 }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+          "id": 1,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum(irate(kepler_pod_cpu_joules_total[1m]))",
+              "legendFormat": "Cluster Total",
+              "refId": "A"
+            }
+          ],
+          "title": "Cluster Power (Watts)",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 10 },
+                  { "color": "red", "value": 50 }
+                ]
+              },
+              "unit": "kwatth"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum(increase(kepler_pod_cpu_joules_total[24h])) / 3600000",
+              "legendFormat": "24h Total",
+              "refId": "A"
+            }
+          ],
+          "title": "Cluster Energy (kWh/24h)",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 2,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 5 },
+                  { "color": "red", "value": 20 }
+                ]
+              },
+              "unit": "none",
+              "unitScale": true,
+              "custom": { "postfix": " SEK" }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 12, "y": 1 },
+          "id": 3,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum(increase(kepler_pod_cpu_joules_total[24h])) / 3600000) * ${electricity_price}",
+              "legendFormat": "24h Cost",
+              "refId": "A"
+            }
+          ],
+          "title": "Cluster Cost (24h)",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 1,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 1000 },
+                  { "color": "red", "value": 5000 }
+                ]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 18, "y": 1 },
+          "id": 4,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "textMode": "auto"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum(increase(kepler_pod_cpu_joules_total[24h])) / 3600000) * ${carbon_intensity}",
+              "legendFormat": "CO2eq (24h)",
+              "refId": "A"
+            }
+          ],
+          "title": "CO2eq Emissions (24h) @ ${carbon_intensity} gCO2eq/kWh",
+          "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+          "id": 101,
+          "panels": [],
+          "title": "Node Level Power Consumption",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Power (Watts)",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": { "type": "linear" },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": { "group": "A", "mode": "none" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+          "id": 5,
+          "options": {
+            "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (node_name) (irate(kepler_pod_cpu_joules_total{node_name=~\"$node\"}[1m]))",
+              "legendFormat": "{{node_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Power by Node (Watts)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false }
+              },
+              "mappings": [],
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+          "id": 6,
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "values": ["value", "percent"] },
+            "pieType": "donut",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "tooltip": { "mode": "single", "sort": "none" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (node_name) (irate(kepler_pod_cpu_joules_total{node_name=~\"$node\"}[1m]))",
+              "legendFormat": "{{node_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Power Distribution by Node",
+          "type": "piechart"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+          "id": 102,
+          "panels": [],
+          "title": "Namespace Level Power & Cost",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Power (Watts)",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": { "type": "linear" },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": { "group": "A", "mode": "normal" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 17 },
+          "id": 7,
+          "options": {
+            "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (pod_namespace) (irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[1m]))",
+              "legendFormat": "{{pod_namespace}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Power by Namespace (Watts) - Stacked",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "auto" },
+                "inspect": false
+              },
+              "decimals": 2,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "red", "value": 100 }
+                ]
+              }
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Namespace" }, "properties": [{ "id": "custom.width", "value": 200 }] },
+              { "matcher": { "id": "byName", "options": "Power (W)" }, "properties": [{ "id": "unit", "value": "watt" }, { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } }] },
+              { "matcher": { "id": "byName", "options": "Energy (kWh/24h)" }, "properties": [{ "id": "unit", "value": "kwatth" }] },
+              { "matcher": { "id": "byName", "options": "Cost (SEK/24h)" }, "properties": [{ "id": "unit", "value": "none" }, { "id": "custom.displayMode", "value": "basic" }] },
+              { "matcher": { "id": "byName", "options": "CO2eq (g/24h)" }, "properties": [{ "id": "unit", "value": "massg" }] }
+            ]
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 17 },
+          "id": 8,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": true },
+            "showHeader": true,
+            "sortBy": [{ "desc": true, "displayName": "Power (W)" }]
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (pod_namespace) (irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[1m]))",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Power"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[24h])) / 3600000",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Energy"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum by (pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[24h])) / 3600000) * ${electricity_price}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Cost"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum by (pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}[24h])) / 3600000) * ${carbon_intensity}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "CO2"
+            }
+          ],
+          "title": "Namespace Power, Cost & CO2eq Table",
+          "transformations": [
+            { "id": "seriesToColumns", "options": { "byField": "pod_namespace" } },
+            { "id": "organize", "options": { "excludeByName": { "Time": true, "Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true }, "indexByName": {}, "renameByName": { "Value #CO2": "CO2eq (g/24h)", "Value #Cost": "Cost (SEK/24h)", "Value #Energy": "Energy (kWh/24h)", "Value #Power": "Power (W)", "pod_namespace": "Namespace" } } }
+          ],
+          "type": "table"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+          "id": 103,
+          "panels": [],
+          "title": "Pod Level Analysis",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Power (Watts)",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "lineInterpolation": "smooth",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": { "type": "linear" },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": { "group": "A", "mode": "none" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 26 },
+          "id": 9,
+          "options": {
+            "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "right", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "topk(15, sum by (pod_name, pod_namespace) (irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\"}[1m])))",
+              "legendFormat": "{{pod_namespace}}/{{pod_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Top 15 Pods by Power (Watts)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "auto" },
+                "inspect": false
+              },
+              "decimals": 3,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 10 },
+                  { "color": "red", "value": 50 }
+                ]
+              }
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Namespace" }, "properties": [{ "id": "custom.width", "value": 180 }] },
+              { "matcher": { "id": "byName", "options": "Pod" }, "properties": [{ "id": "custom.width", "value": 280 }] },
+              { "matcher": { "id": "byName", "options": "Power (W)" }, "properties": [{ "id": "unit", "value": "watt" }, { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } }] },
+              { "matcher": { "id": "byName", "options": "Energy (kWh/24h)" }, "properties": [{ "id": "unit", "value": "kwatth" }] },
+              { "matcher": { "id": "byName", "options": "Cost (SEK/24h)" }, "properties": [{ "id": "unit", "value": "none" }, { "id": "custom.displayMode", "value": "basic" }] },
+              { "matcher": { "id": "byName", "options": "CO2eq (g/24h)" }, "properties": [{ "id": "unit", "value": "massg" }] }
+            ]
+          },
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 34 },
+          "id": 10,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": true },
+            "showHeader": true,
+            "sortBy": [{ "desc": true, "displayName": "Power (W)" }]
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (pod_name, pod_namespace) (irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\"}[1m]))",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Power"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (pod_name, pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\"}[24h])) / 3600000",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Energy"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum by (pod_name, pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\"}[24h])) / 3600000) * ${electricity_price}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Cost"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum by (pod_name, pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\"}[24h])) / 3600000) * ${carbon_intensity}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "CO2"
+            }
+          ],
+          "title": "Pod Power, Cost & CO2eq Details",
+          "transformations": [
+            { "id": "seriesToColumns", "options": { "byField": "pod_name" } },
+            { "id": "organize", "options": { "excludeByName": { "Time": true, "Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true, "pod_namespace 1": true, "pod_namespace 2": true, "pod_namespace 3": true }, "indexByName": {}, "renameByName": { "Value #CO2": "CO2eq (g/24h)", "Value #Cost": "Cost (SEK/24h)", "Value #Energy": "Energy (kWh/24h)", "Value #Power": "Power (W)", "pod_namespace": "Namespace", "pod_name": "Pod" } } }
+          ],
+          "type": "table"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 44 },
+          "id": 104,
+          "panels": [],
+          "title": "Power Component Breakdown (Package vs DRAM)",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Power (Watts)",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": { "type": "linear" },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": { "group": "A", "mode": "normal" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+              "unit": "watt"
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "CPU (Package)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+              { "matcher": { "id": "byName", "options": "DRAM (Memory)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+            ]
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 45 },
+          "id": 11,
+          "options": {
+            "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum(irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\", zone=\"package\"}[1m]))",
+              "legendFormat": "CPU (Package)",
+              "refId": "A"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum(irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\", zone=\"dram\"}[1m]))",
+              "legendFormat": "DRAM (Memory)",
+              "refId": "B"
+            }
+          ],
+          "title": "Power by Component (Stacked)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false }
+              },
+              "mappings": [],
+              "unit": "watt"
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "CPU (Package)" }, "properties": [{ "id": "color", "value": { "fixedColor": "red", "mode": "fixed" } }] },
+              { "matcher": { "id": "byName", "options": "DRAM (Memory)" }, "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }] }
+            ]
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 45 },
+          "id": 12,
+          "options": {
+            "legend": { "displayMode": "table", "placement": "right", "showLegend": true, "values": ["value", "percent"] },
+            "pieType": "donut",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "tooltip": { "mode": "single", "sort": "none" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum(irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\", zone=\"package\"}[1m]))",
+              "legendFormat": "CPU (Package)",
+              "refId": "A"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum(irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\", zone=\"dram\"}[1m]))",
+              "legendFormat": "DRAM (Memory)",
+              "refId": "B"
+            }
+          ],
+          "title": "Power Component Distribution",
+          "type": "piechart"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 53 },
+          "id": 105,
+          "panels": [],
+          "title": "Virtual Machine Power (OpenShift Virtualization)",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Power (Watts)",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": { "type": "linear" },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": { "group": "A", "mode": "none" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 54 },
+          "id": 13,
+          "options": {
+            "legend": { "calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (pod_name, pod_namespace) (irate(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher.*\", pod_namespace=~\"$namespace\"}[1m]))",
+              "legendFormat": "{{pod_namespace}}/{{pod_name}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Virtual Machine Power (virt-launcher pods)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "auto" },
+                "inspect": false
+              },
+              "decimals": 3,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 20 },
+                  { "color": "red", "value": 100 }
+                ]
+              }
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "VM (Pod)" }, "properties": [{ "id": "custom.width", "value": 300 }] },
+              { "matcher": { "id": "byName", "options": "Power (W)" }, "properties": [{ "id": "unit", "value": "watt" }, { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } }] },
+              { "matcher": { "id": "byName", "options": "Energy (kWh/24h)" }, "properties": [{ "id": "unit", "value": "kwatth" }] },
+              { "matcher": { "id": "byName", "options": "Cost (SEK/24h)" }, "properties": [{ "id": "unit", "value": "none" }, { "id": "custom.displayMode", "value": "basic" }] },
+              { "matcher": { "id": "byName", "options": "CO2eq (g/24h)" }, "properties": [{ "id": "unit", "value": "massg" }] }
+            ]
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 54 },
+          "id": 14,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["sum"], "show": true },
+            "showHeader": true,
+            "sortBy": [{ "desc": true, "displayName": "Power (W)" }]
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (pod_name, pod_namespace) (irate(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher.*\"}[1m]))",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Power"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "sum by (pod_name, pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher.*\"}[24h])) / 3600000",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Energy"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum by (pod_name, pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher.*\"}[24h])) / 3600000) * ${electricity_price}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "Cost"
+            },
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum by (pod_name, pod_namespace) (increase(kepler_pod_cpu_joules_total{pod_name=~\"virt-launcher.*\"}[24h])) / 3600000) * ${carbon_intensity}",
+              "format": "table",
+              "instant": true,
+              "legendFormat": "__auto",
+              "refId": "CO2"
+            }
+          ],
+          "title": "VM Power, Cost & CO2eq Details",
+          "transformations": [
+            { "id": "seriesToColumns", "options": { "byField": "pod_name" } },
+            { "id": "organize", "options": { "excludeByName": { "Time": true, "Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true, "pod_namespace 1": true, "pod_namespace 2": true, "pod_namespace 3": true }, "indexByName": {}, "renameByName": { "Value #CO2": "CO2eq (g/24h)", "Value #Cost": "Cost (SEK/24h)", "Value #Energy": "Energy (kWh/24h)", "Value #Power": "Power (W)", "pod_namespace": "Namespace", "pod_name": "VM (Pod)" } } }
+          ],
+          "type": "table"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 62 },
+          "id": 106,
+          "panels": [],
+          "title": "Carbon & Cost Summary",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 1,
+              "mappings": [],
+              "max": 10000,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 2000 },
+                  { "color": "orange", "value": 5000 },
+                  { "color": "red", "value": 8000 }
+                ]
+              },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 63 },
+          "id": 15,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum(increase(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\"}[24h])) / 3600000) * ${carbon_intensity}",
+              "legendFormat": "CO2eq Emissions",
+              "refId": "A"
+            }
+          ],
+          "title": "Daily CO2eq Emissions @ ${carbon_intensity} gCO2eq/kWh",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "gCO2eq",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 30,
+                "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": { "type": "linear" },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": { "group": "A", "mode": "none" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+              "unit": "massg"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 8, "w": 16, "x": 8, "y": 63 },
+          "id": 16,
+          "options": {
+            "legend": { "calcs": ["mean", "max", "sum"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "multi", "sort": "desc" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "prometheus", "uid": "${datasource}" },
+              "expr": "(sum(irate(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\", pod_name=~\"$pod\"}[5m])) / 1000) * ${carbon_intensity}",
+              "legendFormat": "CO2eq Rate (gCO2eq/hour)",
+              "refId": "A"
+            }
+          ],
+          "title": "CO2eq Emission Rate Over Time @ ${carbon_intensity} gCO2eq/kWh",
+          "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 71 },
+          "id": 108,
+          "panels": [],
+          "title": "Live Carbon Intensity (Electricity Maps - ${price_zone})",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${emaps_ds}" },
+          "description": "Live carbon intensity from Electricity Maps API for SE-SE3 (Sweden)",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "dark-green", "value": null },
+                  { "color": "green", "value": 50 },
+                  { "color": "yellow", "value": 100 },
+                  { "color": "orange", "value": 200 },
+                  { "color": "red", "value": 400 }
+                ]
+              },
+              "unit": "none",
+              "custom": { "postfix": " gCO2eq/kWh" }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 8, "x": 0, "y": 72 },
+          "id": 21,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^carbonIntensity$/", "values": false },
+            "textMode": "value_and_name"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "carbonIntensity", "text": "carbonIntensity", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "refId": "A",
+              "root_selector": "",
+              "source": "url",
+              "type": "json",
+              "url": "https://api.electricitymaps.com/v3/carbon-intensity/latest?zone=SE-${price_zone}",
+              "url_options": {
+                "method": "GET"
+              }
+            }
+          ],
+          "title": "Live Carbon Intensity (${price_zone})",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${emaps_ds}" },
+          "description": "Fossil-free percentage in the current electricity mix (higher is better)",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "orange", "value": 30 },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "green", "value": 70 },
+                  { "color": "dark-green", "value": 90 }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 8, "x": 8, "y": 72 },
+          "id": 22,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^fossilFreePercentage$/", "values": false },
+            "textMode": "value_and_name"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "fossilFreePercentage", "text": "fossilFreePercentage", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "refId": "A",
+              "root_selector": "",
+              "source": "url",
+              "type": "json",
+              "url": "https://api.electricitymaps.com/v3/power-breakdown/latest?zone=SE-${price_zone}",
+              "url_options": {
+                "method": "GET"
+              }
+            }
+          ],
+          "title": "Fossil Free % (${price_zone})",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${emaps_ds}" },
+          "description": "Renewable energy percentage in the current electricity mix",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "orange", "value": 30 },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "green", "value": 70 },
+                  { "color": "dark-green", "value": 90 }
+                ]
+              },
+              "unit": "percent"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 8, "x": 16, "y": 72 },
+          "id": 23,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^renewablePercentage$/", "values": false },
+            "textMode": "value_and_name"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "renewablePercentage", "text": "renewablePercentage", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "refId": "A",
+              "root_selector": "",
+              "source": "url",
+              "type": "json",
+              "url": "https://api.electricitymaps.com/v3/power-breakdown/latest?zone=SE-${price_zone}",
+              "url_options": {
+                "method": "GET"
+              }
+            }
+          ],
+          "title": "Renewable % (${price_zone})",
+          "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 78 },
+          "id": 107,
+          "panels": [],
+          "title": "Tibber Electricity Prices (${price_zone})",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${tibber_ds}" },
+          "description": "Current electricity price from Tibber API",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 2,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 1 },
+                  { "color": "orange", "value": 2 },
+                  { "color": "red", "value": 3 }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 79 },
+          "id": 17,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^total$/", "values": false },
+            "textMode": "value_and_name"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [],
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "refId": "A",
+              "root_selector": "data.viewer.homes.0.currentSubscription.priceInfo.current",
+              "source": "url",
+              "type": "graphql",
+              "url": "https://api.tibber.com/v1-beta/gql",
+              "url_options": {
+                "body_content_type": "application/json",
+                "body_graphql_query": "{ viewer { homes { currentSubscription { priceInfo { current { total level startsAt } } } } } }",
+                "method": "POST"
+              }
+            }
+          ],
+          "title": "Current Price (SEK/kWh)",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${tibber_ds}" },
+          "description": "Current price level from Tibber (based on 3-day moving average)",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [
+                { "options": { "VERY_CHEAP": { "color": "dark-green", "index": 0, "text": "Very Cheap" } }, "type": "value" },
+                { "options": { "CHEAP": { "color": "green", "index": 1, "text": "Cheap" } }, "type": "value" },
+                { "options": { "NORMAL": { "color": "yellow", "index": 2, "text": "Normal" } }, "type": "value" },
+                { "options": { "EXPENSIVE": { "color": "orange", "index": 3, "text": "Expensive" } }, "type": "value" },
+                { "options": { "VERY_EXPENSIVE": { "color": "red", "index": 4, "text": "Very Expensive" } }, "type": "value" }
+              ],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "text", "value": null }] }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 6, "y": 79 },
+          "id": 18,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^level$/", "values": false },
+            "textMode": "value"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [],
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "refId": "A",
+              "root_selector": "data.viewer.homes.0.currentSubscription.priceInfo.current",
+              "source": "url",
+              "type": "graphql",
+              "url": "https://api.tibber.com/v1-beta/gql",
+              "url_options": {
+                "body_content_type": "application/json",
+                "body_graphql_query": "{ viewer { homes { currentSubscription { priceInfo { current { total level startsAt } } } } } }",
+                "method": "POST"
+              }
+            }
+          ],
+          "title": "Price Level",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${tibber_ds}" },
+          "description": "Today's hourly electricity prices from Tibber",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "SEK/kWh",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "bars",
+                "fillOpacity": 80,
+                "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "lineInterpolation": "stepAfter",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": { "type": "linear" },
+                "showPoints": "never",
+                "spanNulls": false,
+                "stacking": { "group": "A", "mode": "none" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }] },
+              "unit": "none"
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "total" }, "properties": [{ "id": "displayName", "value": "Price (SEK/kWh)" }] }
+            ]
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 79 },
+          "id": 19,
+          "options": {
+            "legend": { "calcs": ["min", "max", "mean"], "displayMode": "table", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "single", "sort": "none" }
+          },
+          "targets": [
+            {
+              "columns": [
+                { "selector": "startsAt", "text": "time", "type": "timestamp" },
+                { "selector": "total", "text": "total", "type": "number" }
+              ],
+              "filters": [],
+              "format": "timeseries",
+              "global_query_id": "",
+              "refId": "A",
+              "root_selector": "data.viewer.homes.0.currentSubscription.priceInfo.today",
+              "source": "url",
+              "type": "graphql",
+              "url": "https://api.tibber.com/v1-beta/gql",
+              "url_options": {
+                "body_content_type": "application/json",
+                "body_graphql_query": "{ viewer { homes { currentSubscription { priceInfo { today { total startsAt level } tomorrow { total startsAt level } } } } } }",
+                "method": "POST"
+              }
+            },
+            {
+              "columns": [
+                { "selector": "startsAt", "text": "time", "type": "timestamp" },
+                { "selector": "total", "text": "total", "type": "number" }
+              ],
+              "filters": [],
+              "format": "timeseries",
+              "global_query_id": "",
+              "refId": "B",
+              "root_selector": "data.viewer.homes.0.currentSubscription.priceInfo.tomorrow",
+              "source": "url",
+              "type": "graphql",
+              "url": "https://api.tibber.com/v1-beta/gql",
+              "url_options": {
+                "body_content_type": "application/json",
+                "body_graphql_query": "{ viewer { homes { currentSubscription { priceInfo { today { total startsAt level } tomorrow { total startsAt level } } } } } }",
+                "method": "POST"
+              }
+            }
+          ],
+          "title": "Today & Tomorrow Hourly Prices (SEK/kWh)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${tibber_ds}" },
+          "description": "Today's hourly electricity prices with price levels",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "auto" },
+                "inspect": false
+              },
+              "decimals": 2,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 1 },
+                  { "color": "orange", "value": 2 },
+                  { "color": "red", "value": 3 }
+                ]
+              }
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "startsAt" }, "properties": [{ "id": "displayName", "value": "Hour" }, { "id": "custom.width", "value": 180 }] },
+              { "matcher": { "id": "byName", "options": "total" }, "properties": [{ "id": "displayName", "value": "Price (SEK/kWh)" }, { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } }] },
+              { "matcher": { "id": "byName", "options": "level" }, "properties": [{ "id": "displayName", "value": "Level" }, { "id": "mappings", "value": [{ "options": { "VERY_CHEAP": { "color": "dark-green", "index": 0, "text": "Very Cheap" } }, "type": "value" }, { "options": { "CHEAP": { "color": "green", "index": 1, "text": "Cheap" } }, "type": "value" }, { "options": { "NORMAL": { "color": "yellow", "index": 2, "text": "Normal" } }, "type": "value" }, { "options": { "EXPENSIVE": { "color": "orange", "index": 3, "text": "Expensive" } }, "type": "value" }, { "options": { "VERY_EXPENSIVE": { "color": "red", "index": 4, "text": "Very Expensive" } }, "type": "value" }] }] }
+            ]
+          },
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 85 },
+          "id": 20,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["mean"], "show": true },
+            "showHeader": true,
+            "sortBy": [{ "desc": false, "displayName": "Hour" }]
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "startsAt", "text": "startsAt", "type": "timestamp" },
+                { "selector": "total", "text": "total", "type": "number" },
+                { "selector": "level", "text": "level", "type": "string" }
+              ],
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "refId": "A",
+              "root_selector": "data.viewer.homes.0.currentSubscription.priceInfo.today",
+              "source": "url",
+              "type": "graphql",
+              "url": "https://api.tibber.com/v1-beta/gql",
+              "url_options": {
+                "body_content_type": "application/json",
+                "body_graphql_query": "{ viewer { homes { currentSubscription { priceInfo { today { total startsAt level } } } } } }",
+                "method": "POST"
+              }
+            }
+          ],
+          "title": "Today's Hourly Prices",
+          "type": "table"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 38,
+      "style": "dark",
+      "tags": ["kepler", "power-monitoring", "sustainability", "carbon"],
+      "templating": {
+        "list": [
+          {
+            "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+            "hide": 0,
+            "includeAll": false,
+            "label": "Data Source",
+            "multi": false,
+            "name": "datasource",
+            "options": [],
+            "query": "prometheus",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+          {
+            "current": { "selected": false, "text": "Tibber", "value": "Tibber" },
+            "hide": 0,
+            "includeAll": false,
+            "label": "Tibber Data Source",
+            "multi": false,
+            "name": "tibber_ds",
+            "options": [],
+            "query": "yesoreyeram-infinity-datasource",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "/Tibber/",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+          {
+            "current": { "selected": false, "text": "ElectricityMaps", "value": "ElectricityMaps" },
+            "hide": 0,
+            "includeAll": false,
+            "label": "Electricity Maps Data Source",
+            "multi": false,
+            "name": "emaps_ds",
+            "options": [],
+            "query": "yesoreyeram-infinity-datasource",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "/ElectricityMaps/",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+          {
+            "current": { "selected": false, "text": "SE-SE3", "value": "SE-SE3" },
+            "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${tibber_ds}" },
+            "definition": "",
+            "description": "Electricity price zone from Tibber metering point data (auto-detected)",
+            "hide": 0,
+            "includeAll": false,
+            "label": "Price Zone",
+            "multi": false,
+            "name": "price_zone",
+            "options": [],
+            "query": {
+              "columns": [],
+              "filters": [],
+              "format": "table",
+              "global_query_id": "",
+              "refId": "A",
+              "root_selector": "data.viewer.homes.0.meteringPointData",
+              "source": "url",
+              "type": "graphql",
+              "url": "https://api.tibber.com/v1-beta/gql",
+              "url_options": {
+                "body_content_type": "application/json",
+                "body_graphql_query": "{ viewer { homes { meteringPointData { priceAreaCode } } } }",
+                "method": "POST"
+              }
+            },
+            "refresh": 1,
+            "regex": "/priceAreaCode.*?\"(SE\\d)/",
+            "skipUrlSync": false,
+            "sort": 0,
+            "type": "query"
+          },
+          {
+            "allValue": ".*",
+            "current": { "selected": true, "text": "All", "value": "$__all" },
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "definition": "label_values(kepler_pod_cpu_joules_total, node_name)",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Node",
+            "multi": true,
+            "name": "node",
+            "options": [],
+            "query": { "query": "label_values(kepler_pod_cpu_joules_total, node_name)", "refId": "StandardVariableQuery" },
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query"
+          },
+          {
+            "allValue": ".*",
+            "current": { "selected": true, "text": "All", "value": "$__all" },
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "definition": "label_values(kepler_pod_cpu_joules_total, pod_namespace)",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Namespace",
+            "multi": true,
+            "name": "namespace",
+            "options": [],
+            "query": { "query": "label_values(kepler_pod_cpu_joules_total, pod_namespace)", "refId": "StandardVariableQuery" },
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query"
+          },
+          {
+            "allValue": ".*",
+            "current": { "selected": true, "text": "All", "value": "$__all" },
+            "datasource": { "type": "prometheus", "uid": "${datasource}" },
+            "definition": "label_values(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}, pod_name)",
+            "hide": 0,
+            "includeAll": true,
+            "label": "Pod",
+            "multi": true,
+            "name": "pod",
+            "options": [],
+            "query": { "query": "label_values(kepler_pod_cpu_joules_total{pod_namespace=~\"$namespace\"}, pod_name)", "refId": "StandardVariableQuery" },
+            "refresh": 2,
+            "regex": "",
+            "skipUrlSync": false,
+            "sort": 1,
+            "type": "query"
+          },
+          {
+            "current": { "selected": false, "text": "1.00", "value": "1.00" },
+            "description": "Default electricity price in SEK/kWh. Live price is shown in the Tibber panels below.",
+            "hide": 0,
+            "label": "Electricity Price (SEK/kWh)",
+            "name": "electricity_price",
+            "options": [
+              { "selected": true, "text": "1.00", "value": "1.00" }
+            ],
+            "query": "1.00",
+            "skipUrlSync": false,
+            "type": "textbox"
+          },
+          {
+            "current": { "selected": false, "text": "45", "value": "45" },
+            "description": "Default carbon intensity in gCO2eq/kWh for SE-SE3. Live value is shown in the Electricity Maps panels below.",
+            "hide": 0,
+            "label": "Carbon Intensity (gCO2eq/kWh)",
+            "name": "carbon_intensity",
+            "options": [
+              { "selected": true, "text": "45", "value": "45" }
+            ],
+            "query": "45",
+            "skipUrlSync": false,
+            "type": "textbox"
+          }
+        ]
+      },
+      "time": { "from": "now-6h", "to": "now" },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Kepler Power Monitoring - Cost & Carbon",
+      "uid": "kepler-power-cost-carbon",
+      "version": 1,
+      "weekStart": ""
+    }

@@ -1,0 +1,23 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDatasource
+metadata:
+  name: influxdb-datasource
+  namespace: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "kepler"
+  datasource:
+    name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    isDefault: false
+    jsonData:
+      version: Flux
+      organization: kepler
+      defaultBucket: energy-data
+      tlsSkipVerify: true
+    secureJsonData:
+      token: "<YOUR_INFLUXDB_TOKEN>"

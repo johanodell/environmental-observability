@@ -1,0 +1,1158 @@
+---
+apiVersion: grafana.integreatly.org/v1beta1
+kind: GrafanaDashboard
+metadata:
+  name: bmc-hardware-monitoring
+  namespace: grafana
+spec:
+  instanceSelector:
+    matchLabels:
+      dashboards: "kepler"
+  json: |
+    {
+      "annotations": { "list": [] },
+      "editable": true,
+      "fiscalYearStartMonth": 0,
+      "graphTooltip": 1,
+      "id": null,
+      "links": [],
+      "liveNow": false,
+      "panels": [
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "id": 100,
+          "panels": [],
+          "title": "System Overview",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Current system power consumption",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 300 },
+                  { "color": "orange", "value": 400 },
+                  { "color": "red", "value": 500 }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 1 },
+          "id": 1,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^PowerConsumedWatts$/", "values": false },
+            "textMode": "value_and_name"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "PowerConsumedWatts", "text": "PowerConsumedWatts", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "PowerControl.0",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Power",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "Current Power",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Average power consumption over time",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 300 },
+                  { "color": "orange", "value": 400 },
+                  { "color": "red", "value": 500 }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 6, "y": 1 },
+          "id": 2,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^AverageConsumedWatts$/", "values": false },
+            "textMode": "value_and_name"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "AverageConsumedWatts", "text": "AverageConsumedWatts", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "PowerControl.0.PowerMetrics",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Power",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "Average Power",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Minimum power consumption recorded",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 12, "y": 1 },
+          "id": 3,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^MinConsumedWatts$/", "values": false },
+            "textMode": "value_and_name"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "MinConsumedWatts", "text": "MinConsumedWatts", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "PowerControl.0.PowerMetrics",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Power",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "Min Power",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Maximum power consumption recorded",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 400 },
+                  { "color": "red", "value": 500 }
+                ]
+              },
+              "unit": "watt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 18, "y": 1 },
+          "id": 4,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^MaxConsumedWatts$/", "values": false },
+            "textMode": "value_and_name"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "MaxConsumedWatts", "text": "MaxConsumedWatts", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "PowerControl.0.PowerMetrics",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Power",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "Max Power",
+          "type": "stat"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+          "id": 101,
+          "panels": [],
+          "title": "CPU & System Temperatures",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "CPU 1 Temperature",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "orange", "value": 80 },
+                  { "color": "red", "value": 90 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 4, "x": 0, "y": 8 },
+          "id": 5,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingCelsius$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures.17",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "CPU 1 (P1)",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "CPU 2 Temperature",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "orange", "value": 80 },
+                  { "color": "red", "value": 90 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 4, "x": 4, "y": 8 },
+          "id": 6,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingCelsius$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures.18",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "CPU 2 (P2)",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Inlet/Front Panel Temperature",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 60,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 35 },
+                  { "color": "orange", "value": 45 },
+                  { "color": "red", "value": 55 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 4, "x": 8, "y": 8 },
+          "id": 7,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingCelsius$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures.3",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "Inlet (Front Panel)",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Exit/Exhaust Air Temperature",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 60 },
+                  { "color": "orange", "value": 75 },
+                  { "color": "red", "value": 85 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 4, "x": 12, "y": 8 },
+          "id": 8,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingCelsius$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures.11",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "Exhaust Air",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "BMC Controller Temperature",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 100,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 70 },
+                  { "color": "orange", "value": 90 },
+                  { "color": "red", "value": 100 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 4, "x": 16, "y": 8 },
+          "id": 9,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingCelsius$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures.6",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "BMC",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "LAN NIC Temperature",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 120,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 80 },
+                  { "color": "orange", "value": 100 },
+                  { "color": "red", "value": 115 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 4, "x": 20, "y": 8 },
+          "id": 10,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingCelsius$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures.12",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "LAN NIC",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "All temperature sensors",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "auto" },
+                "inspect": false
+              },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 60 },
+                  { "color": "orange", "value": 80 },
+                  { "color": "red", "value": 100 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Name" }, "properties": [{ "id": "custom.width", "value": 200 }] },
+              { "matcher": { "id": "byName", "options": "ReadingCelsius" }, "properties": [{ "id": "displayName", "value": "Temperature" }, { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } }] }
+            ]
+          },
+          "gridPos": { "h": 10, "w": 12, "x": 0, "y": 14 },
+          "id": 11,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["mean"], "show": false },
+            "showHeader": true,
+            "sortBy": [{ "desc": true, "displayName": "Temperature" }]
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "Name", "text": "Name", "type": "string" },
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "All Temperature Sensors",
+          "type": "table"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 24 },
+          "id": 102,
+          "panels": [],
+          "title": "Fan Speeds",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "All fan speeds",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 15000,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "orange", "value": 2000 },
+                  { "color": "green", "value": 3000 },
+                  { "color": "yellow", "value": 10000 }
+                ]
+              },
+              "unit": "rotrpm"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 14 },
+          "id": 12,
+          "options": {
+            "displayMode": "gradient",
+            "minVizHeight": 10,
+            "minVizWidth": 0,
+            "orientation": "horizontal",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": true },
+            "showUnfilled": true,
+            "valueMode": "color"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "Name", "text": "Name", "type": "string" },
+                { "selector": "Reading", "text": "Reading", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Fans",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "Fan Speeds (RPM)",
+          "transformations": [
+            { "id": "rowsToFields", "options": { "mappings": [{ "fieldName": "Name", "handlerKey": "field.name" }, { "fieldName": "Reading", "handlerKey": "field.value" }] } }
+          ],
+          "type": "bargauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Fan speed table with details",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "auto" },
+                "inspect": false
+              },
+              "decimals": 0,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "orange", "value": 2000 },
+                  { "color": "green", "value": 3000 }
+                ]
+              },
+              "unit": "rotrpm"
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Name" }, "properties": [{ "id": "custom.width", "value": 150 }] },
+              { "matcher": { "id": "byName", "options": "Reading" }, "properties": [{ "id": "displayName", "value": "Speed (RPM)" }, { "id": "custom.cellOptions", "value": { "mode": "gradient", "type": "gauge" } }] }
+            ]
+          },
+          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 20 },
+          "id": 13,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["mean"], "show": true },
+            "showHeader": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "Name", "text": "Name", "type": "string" },
+                { "selector": "Reading", "text": "Reading", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Fans",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "Fan Details",
+          "type": "table"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 },
+          "id": 103,
+          "panels": [],
+          "title": "Voltages & Power Supplies",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Main 12V rail voltage",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 2,
+              "mappings": [],
+              "max": 14,
+              "min": 10,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "orange", "value": 10.5 },
+                  { "color": "green", "value": 11 },
+                  { "color": "orange", "value": 13.2 },
+                  { "color": "red", "value": 13.6 }
+                ]
+              },
+              "unit": "volt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 27 },
+          "id": 14,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingVolts$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingVolts", "text": "ReadingVolts", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Voltages.0",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Power",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "+12V Rail",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "CMOS Battery voltage",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 2,
+              "mappings": [],
+              "max": 4,
+              "min": 2,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "red", "value": null },
+                  { "color": "orange", "value": 2.4 },
+                  { "color": "green", "value": 2.6 }
+                ]
+              },
+              "unit": "volt"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 6, "y": 27 },
+          "id": 15,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingVolts$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingVolts", "text": "ReadingVolts", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Voltages.1",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Power",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "CMOS Battery (3.3V)",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "All voltage sensors",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "custom": {
+                "align": "auto",
+                "cellOptions": { "type": "auto" },
+                "inspect": false
+              },
+              "decimals": 2,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null }
+                ]
+              },
+              "unit": "volt"
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Name" }, "properties": [{ "id": "custom.width", "value": 180 }] },
+              { "matcher": { "id": "byName", "options": "ReadingVolts" }, "properties": [{ "id": "displayName", "value": "Voltage" }] }
+            ]
+          },
+          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 27 },
+          "id": 16,
+          "options": {
+            "cellHeight": "sm",
+            "footer": { "countRows": false, "fields": "", "reducer": ["mean"], "show": false },
+            "showHeader": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "Name", "text": "Name", "type": "string" },
+                { "selector": "ReadingVolts", "text": "ReadingVolts", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Voltages",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Power",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "All Voltage Sensors",
+          "type": "table"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Power Supply 1 Temperature",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 80,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "orange", "value": 60 },
+                  { "color": "red", "value": 65 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 33 },
+          "id": 17,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingCelsius$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures.13",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "PSU 1 Temperature",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "yesoreyeram-infinity-datasource", "uid": "${bmc_ds}" },
+          "description": "Power Supply 2 Temperature",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 0,
+              "mappings": [],
+              "max": 80,
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "yellow", "value": 50 },
+                  { "color": "orange", "value": 60 },
+                  { "color": "red", "value": 65 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 6, "y": 33 },
+          "id": 18,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "/^ReadingCelsius$/", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "columns": [
+                { "selector": "ReadingCelsius", "text": "ReadingCelsius", "type": "number" }
+              ],
+              "filters": [],
+              "format": "table",
+              "refId": "A",
+              "root_selector": "Temperatures.14",
+              "source": "url",
+              "type": "json",
+              "url": "https://<YOUR_BMC_IP>/redfish/v1/Chassis/RackMount/Baseboard/Thermal",
+              "url_options": { "method": "GET" }
+            }
+          ],
+          "title": "PSU 2 Temperature",
+          "type": "gauge"
+        },
+        {
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 },
+          "id": 104,
+          "panels": [],
+          "title": "Datacenter Temperature",
+          "type": "row"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${influxdb_ds}" },
+          "description": "Current datacenter temperature from Adax heater",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "decimals": 1,
+              "mappings": [],
+              "max": 30,
+              "min": -10,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "blue", "value": null },
+                  { "color": "green", "value": 5 },
+                  { "color": "yellow", "value": 20 },
+                  { "color": "orange", "value": 25 }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 0, "y": 40 },
+          "id": 19,
+          "options": {
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "showThresholdLabels": false,
+            "showThresholdMarkers": true
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "${influxdb_ds}" },
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"adax_temperature\")\n  |> filter(fn: (r) => r._field == \"temperature\")\n  |> filter(fn: (r) => r.room == \"garage\")\n  |> last()",
+              "refId": "A"
+            }
+          ],
+          "title": "Datacenter Temperature",
+          "type": "gauge"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${influxdb_ds}" },
+          "description": "Datacenter heater status",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "thresholds" },
+              "mappings": [
+                { "options": { "0": { "color": "text", "index": 0, "text": "OFF" }, "1": { "color": "orange", "index": 1, "text": "HEATING" } }, "type": "value" }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "text", "value": null }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 6, "x": 6, "y": 40 },
+          "id": 20,
+          "options": {
+            "colorMode": "value",
+            "graphMode": "none",
+            "justifyMode": "auto",
+            "orientation": "auto",
+            "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+            "textMode": "value"
+          },
+          "pluginVersion": "9.5.0",
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "${influxdb_ds}" },
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: -1h)\n  |> filter(fn: (r) => r._measurement == \"adax_temperature\")\n  |> filter(fn: (r) => r._field == \"heating_enabled\")\n  |> filter(fn: (r) => r.room == \"garage\")\n  |> last()",
+              "refId": "A"
+            }
+          ],
+          "title": "Heater Status",
+          "type": "stat"
+        },
+        {
+          "datasource": { "type": "influxdb", "uid": "${influxdb_ds}" },
+          "description": "Datacenter temperature history",
+          "fieldConfig": {
+            "defaults": {
+              "color": { "mode": "palette-classic" },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 10,
+                "gradientMode": "none",
+                "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+                "lineInterpolation": "smooth",
+                "lineWidth": 2,
+                "pointSize": 5,
+                "scaleDistribution": { "type": "linear" },
+                "showPoints": "auto",
+                "spanNulls": true,
+                "stacking": { "group": "A", "mode": "none" },
+                "thresholdsStyle": { "mode": "off" }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null }
+                ]
+              },
+              "unit": "celsius"
+            },
+            "overrides": []
+          },
+          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 40 },
+          "id": 21,
+          "options": {
+            "legend": { "calcs": ["min", "max", "mean"], "displayMode": "list", "placement": "bottom", "showLegend": true },
+            "tooltip": { "mode": "single", "sort": "none" }
+          },
+          "targets": [
+            {
+              "datasource": { "type": "influxdb", "uid": "${influxdb_ds}" },
+              "query": "from(bucket: \"energy-data\")\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\n  |> filter(fn: (r) => r._measurement == \"adax_temperature\")\n  |> filter(fn: (r) => r._field == \"temperature\")\n  |> filter(fn: (r) => r.room == \"garage\")\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)",
+              "refId": "A"
+            }
+          ],
+          "title": "Datacenter Temperature History",
+          "type": "timeseries"
+        }
+      ],
+      "refresh": "30s",
+      "schemaVersion": 38,
+      "style": "dark",
+      "tags": ["bmc", "hardware", "sensors", "redfish", "adax", "environment"],
+      "templating": {
+        "list": [
+          {
+            "current": { "selected": false, "text": "BMC-Redfish", "value": "BMC-Redfish" },
+            "hide": 0,
+            "includeAll": false,
+            "label": "BMC Data Source",
+            "multi": false,
+            "name": "bmc_ds",
+            "options": [],
+            "query": "yesoreyeram-infinity-datasource",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "/BMC/",
+            "skipUrlSync": false,
+            "type": "datasource"
+          },
+          {
+            "current": { "selected": false, "text": "InfluxDB", "value": "InfluxDB" },
+            "hide": 0,
+            "includeAll": false,
+            "label": "InfluxDB",
+            "multi": false,
+            "name": "influxdb_ds",
+            "options": [],
+            "query": "influxdb",
+            "queryValue": "",
+            "refresh": 1,
+            "regex": "",
+            "skipUrlSync": false,
+            "type": "datasource"
+          }
+        ]
+      },
+      "time": { "from": "now-6h", "to": "now" },
+      "timepicker": {},
+      "timezone": "browser",
+      "title": "Server Hardware - BMC Sensors",
+      "uid": "bmc-hardware-sensors",
+      "version": 1,
+      "weekStart": ""
+    }
