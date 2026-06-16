@@ -129,7 +129,8 @@ data:
         em_zone = zone or ELECTRICITYMAPS_ZONE
 
         headers = {
-            'auth-token': ELECTRICITYMAPS_TOKEN
+            'auth-token': ELECTRICITYMAPS_TOKEN,
+            'User-Agent': 'energy-data-collector/1.0'
         }
 
         result = {'zone': em_zone}
